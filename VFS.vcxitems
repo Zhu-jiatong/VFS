@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{816663b6-a53e-4e34-8558-89fd8ba07fb3}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="$(MSBuildThisFileDirectory)readme.txt" />
+    <Text Include="$(MSBuildThisFileDirectory)library.properties" />
+    <Text Include="$(MSBuildThisFileDirectory)src\VFS.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- <ClInclude Include="$(MSBuildThisFileDirectory)VFS.h" /> -->
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\Disk.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\DiskError.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\DiskMap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\FileError.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\VFSError.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\DiskMap.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\VFS.cpp" />
+  </ItemGroup>
+</Project>
