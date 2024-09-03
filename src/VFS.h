@@ -55,9 +55,9 @@ public:
 	std::vector<FileMetadata> listDirectory(std::int64_t directoryID);
 
 	static std::string getExtension(const std::string& filename);
-	static std::string constructFilename(std::int64_t fileID, const std::string& filename);
 	static void preupdateCallback(vfs::Filesystem& vfs, SQLite::DbConnection& db, SQLite::DbConnection::ColumnUpdateType operationType, const std::string& dbName, const std::string& tableName, std::int64_t rowid, std::optional<std::int64_t> newRowid);
 
+private:
 	SQLite::DbConnection& m_db;
 	DiskMap m_diskMap;
 

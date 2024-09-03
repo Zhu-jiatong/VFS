@@ -49,7 +49,7 @@ void setup()
 
 		for (auto& file : files)
 		{
-			std::cout << file.fileID << ' ' << file.name << ' ' << file.isDirectory << ' ' << file.size << ' ' << file.lastModified << ' ' << file.ownerID << '\n';
+			std::cout << file.fileID << ' ' << file.name << ' ' << std::boolalpha << file.isDirectory << ' ' << file.size << ' ' << file.lastModified << ' ' << file.ownerID << '\n';
 		}
 
 		std::vector<std::int64_t> path = vfs.getVirtualPath(2);
@@ -64,7 +64,7 @@ void setup()
 		bool hasPermission = vfs.hasPermission(3, 0, FILE_READ);
 		std::cout << "Has permission: " << hasPermission << std::endl;
 
-		//vfs.removeFileEntry(1, 0);
+		// vfs.removeFileEntry(1, 0);
 	}
 	catch (const std::exception& e)
 	{

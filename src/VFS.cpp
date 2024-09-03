@@ -18,8 +18,9 @@ vfs::Filesystem::Filesystem(SQLite::DbConnection& db) :m_db(db), m_diskMap(db)
 File vfs::Filesystem::m_open(Disk& disk, const std::string& internalFilename, const char* mode)
 {
 	FS& fs = disk.getFS();
+	const std::string internalPath = '/' + internalFilename;
 
-	File file = fs.open(internalFilename.c_str(), mode);
+	File file = fs.open(internalPath.c_str(), mode);
 	if (!file)
 		throw FileError("Failed to open file");
 
@@ -29,15 +30,14 @@ File vfs::Filesystem::m_open(Disk& disk, const std::string& internalFilename, co
 File vfs::Filesystem::openFile(std::int64_t fileID, const char* mode)
 {
 	SQLite::SQLStatement stmt = m_db.prepare(
-		"SELECT DiskID, Name FROM FileEntries WHERE ID = :fileID"
+		"SELECT DiskID FROM FileEntries WHERE ID = :fileID"
 	).bind(fileID);
 
 	if (!stmt.evaluate())
 		throw FileError("File not found", FileAccessInfo(fileID, mode));
 
 	std::int64_t diskID = stmt.getColumnValue<std::int64_t>(0);
-	std::string displayName = stmt.getColumnValue<std::string>(1);
-	std::string internalFilename = constructFilename(fileID, displayName);
+	std::string internalFilename = std::to_string(fileID);
 
 	Disk& disk = m_diskMap.getDiskByID(diskID);
 
@@ -59,7 +59,7 @@ File vfs::Filesystem::openFile(std::int64_t parentID, const std::string& filenam
 	const char* mode = FILE_WRITE;
 	auto& [diskID, disk] = m_diskMap.getDiskByRequiredSize(size);
 
-	m_createEntry(parentID, filename, userID, diskID);
+	m_createEntry(parentID, filename, userID, diskID); // TODO: return fileID of new entry
 	SQLite::SQLStatement stmt = m_db.prepare(
 		"SELECT ID FROM FileEntries WHERE ParentID = ? AND Name = ?"
 	);
@@ -68,7 +68,7 @@ File vfs::Filesystem::openFile(std::int64_t parentID, const std::string& filenam
 		throw FileError("Failed to create entry", FileAccessInfo(parentID, mode));
 
 	std::int64_t fileID = stmt.getColumnValue<std::int64_t>(0);
-	std::string internalFilename = constructFilename(fileID, filename);
+	std::string internalFilename = std::to_string(fileID);
 
 	try
 	{
@@ -101,12 +101,12 @@ std::vector<vfs::Filesystem::FileMetadata> vfs::Filesystem::listDirectory(std::i
 		metadata.fileID = stmt.getColumnValue<std::int64_t>(0);
 		metadata.name = stmt.getColumnValue<std::string>(1);
 		metadata.ownerID = stmt.getColumnValue<std::int64_t>(2);
-		metadata.isDirectory = stmt.getColumnValue<std::string>(3) == "null";
+		metadata.isDirectory = stmt.getColumnValue<std::string>(3) == "null"; // TODO: use generated column (https://www.sqlite.org/gencol.html).
 		if (!metadata.isDirectory)
 		{
 			Disk& disk = m_diskMap.getDiskByID(stmt.getColumnValue<std::int64_t>(4));
 			FS& fs = disk.getFS();
-			std::string internalFilename = constructFilename(metadata.fileID, metadata.name);
+			std::string internalFilename = std::to_string(metadata.fileID);
 			File file = m_open(disk, internalFilename, FILE_READ);
 			metadata.size = file.size();
 			metadata.lastModified = file.getLastWrite();
@@ -137,7 +137,8 @@ void vfs::Filesystem::m_removePhysicalFile(std::int64_t diskID, const std::strin
 {
 	Disk& disk = m_diskMap.getDiskByID(diskID);
 	FS& fs = disk.getFS();
-	if (!fs.remove(internalFilename.c_str()))
+	const std::string internalPath = '/' + internalFilename;
+	if (!fs.remove(internalPath.c_str()))
 		throw FileError("Failed to remove file", FileAccessInfo(diskID, FILE_WRITE));
 }
 
@@ -326,17 +327,9 @@ std::string vfs::Filesystem::getExtension(const std::string& filename)
 	return filename.substr(pos);
 }
 
-std::string vfs::Filesystem::constructFilename(int64_t fileID, const std::string& filename)
-{
-	std::string extension = getExtension(filename);
-	return '/' + std::to_string(fileID) + extension;
-}
-
 void vfs::Filesystem::preupdateCallback(vfs::Filesystem& vfs, SQLite::DbConnection& db, SQLite::DbConnection::ColumnUpdateType operationType, const std::string& dbName, const std::string& tableName, std::int64_t rowid, std::optional<std::int64_t> newRowid)
 {
-	std::cout << "Callback called!" << std::endl;
-
-	if (operationType != SQLite::DbConnection::ColumnUpdateType::DELETE)
+	if (operationType != SQLite::DbConnection::ColumnUpdateType::DELETE) // Not a delete operation
 		return;
 
 	SQLite::SQLValue oldDiskID = db.preupdateOld(2);
@@ -344,10 +337,7 @@ void vfs::Filesystem::preupdateCallback(vfs::Filesystem& vfs, SQLite::DbConnecti
 		return;
 
 	SQLite::SQLValue oldID = db.preupdateOld(0);
-	SQLite::SQLValue oldName = db.preupdateOld(4);
 
-	std::string internalFilename = vfs::Filesystem::constructFilename(oldID.get<std::int64_t>(), oldName.get<std::string>());
+	std::string internalFilename = std::to_string(oldID.get<std::int64_t>());
 	vfs.m_removePhysicalFile(oldDiskID.get<std::int64_t>(), internalFilename);
-
-	std::cout << "Physical file removed!" << std::endl;
 }
