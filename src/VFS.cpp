@@ -59,15 +59,7 @@ File vfs::Filesystem::openFile(std::int64_t parentID, const std::string& filenam
 	const char* mode = FILE_WRITE;
 	auto& [diskID, disk] = m_diskMap.getDiskByRequiredSize(size);
 
-	m_createEntry(parentID, filename, userID, diskID); // TODO: return fileID of new entry
-	SQLite::SQLStatement stmt = m_db.prepare(
-		"SELECT ID FROM FileEntries WHERE ParentID = ? AND Name = ?"
-	);
-	stmt.bind(parentID, filename);
-	if (!stmt.evaluate())
-		throw FileError("Failed to create entry", FileAccessInfo(parentID, mode));
-
-	std::int64_t fileID = stmt.getColumnValue<std::int64_t>(0);
+	std::int64_t fileID = m_createEntry(parentID, filename, userID, diskID);
 	std::string internalFilename = std::to_string(fileID);
 
 	try
@@ -117,13 +109,20 @@ std::vector<vfs::Filesystem::FileMetadata> vfs::Filesystem::listDirectory(std::i
 	return result;
 }
 
-void vfs::Filesystem::m_createEntry(std::int64_t parentID, const std::string& filename, std::int64_t ownerID, std::int64_t diskID)
+std::int64_t vfs::Filesystem::m_createEntry(std::int64_t parentID, const std::string& filename, std::int64_t ownerID, std::int64_t diskID)
 {
 	// NOTE: enforce composite unique for (parentID, Name)
-	m_db.prepare(
+	SQLite::SQLStatement stmt = m_db.prepare(
 		"INSERT INTO FileEntries (ParentID, Name, OwnerID, DiskID) "
-		"VALUES (:parentID, :filename, :ownerID, :diskID)"
-	).bind(parentID, filename, ownerID, diskID).evaluate();
+		"VALUES (:parentID, :filename, :ownerID, :diskID) "
+		"RETURNING ID"
+	);
+	stmt.bind(parentID, filename, ownerID, diskID);
+
+	if (!stmt.evaluate())
+		throw FileError("Failed to acquire file ID", FileAccessInfo(parentID, FILE_WRITE));
+
+	return stmt.getColumnValue<std::int64_t>(0);
 }
 
 void vfs::Filesystem::m_removeFileEntry(std::int64_t fileID)

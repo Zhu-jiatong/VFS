@@ -62,7 +62,7 @@ private:
 	DiskMap m_diskMap;
 
 	File m_open(Disk& disk, const std::string& filename, const char* mode);
-	void m_createEntry(std::int64_t parentID, const std::string& filename, std::int64_t ownerID, std::int64_t diskID);
+	std::int64_t m_createEntry(std::int64_t parentID, const std::string& filename, std::int64_t ownerID, std::int64_t diskID);
 	void m_removeFileEntry(std::int64_t fileID); // Only removes the entry from the database, not the file itself
 	void m_removePhysicalFile(std::int64_t diskID, const std::string& internalFilename);
 };
