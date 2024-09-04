@@ -45,21 +45,21 @@ void setup()
 			file.println("Hello, world!");
 		}
 
-		std::vector<vfs::Filesystem::FileMetadata> files = vfs.listDirectory(rootID);
+		printDirectory(rootID, vfs);
 
-		for (auto& file : files)
-		{
-			std::cout << file.fileID << ' ' << file.name << ' ' << std::boolalpha << file.isDirectory << ' ' << file.size << ' ' << file.lastModified << ' ' << file.ownerID << '\n';
-		}
+		vfs.renameFile(3, "personal2", 0);
+
+		printDirectory(rootID, vfs);
 
 		std::vector<std::int64_t> path = vfs.getVirtualPath(2);
 		for (auto& i : path)
-			std::cout << i << '\n';
+			std::cout << i << '/';
 		std::cout << '\n';
 
 		std::vector<std::int64_t> path2 = vfs.getVirtualPath(3);
 		for (auto& i : path2)
-			std::cout << i << '\n';
+			std::cout << i << '/';
+		std::cout << '\n';
 
 		bool hasPermission = vfs.hasPermission(3, 0, FILE_READ);
 		std::cout << "Has permission: " << hasPermission << std::endl;
@@ -130,9 +130,10 @@ void initialiseDatabase(SQLite::DbConnection& db)
 
 void printDirectory(std::int64_t parentID, vfs::Filesystem& vfs)
 {
-	std::vector<std::int64_t> children = vfs.getVirtualPath(parentID);
-	for (auto& child : children)
+	std::vector<vfs::Filesystem::FileMetadata> files = vfs.listDirectory(parentID);
+
+	for (auto& file : files)
 	{
-		std::cout << child << '\n';
+		std::cout << file.fileID << ' ' << file.name << ' ' << std::boolalpha << file.isDirectory << ' ' << file.size << ' ' << file.lastModified << ' ' << file.ownerID << '\n';
 	}
 }

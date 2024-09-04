@@ -317,6 +317,16 @@ void vfs::Filesystem::removeFileEntry(std::int64_t fileID, std::int64_t userID)
 	m_removeFileEntry(fileID);
 }
 
+void vfs::Filesystem::renameFile(std::int64_t fileID, const std::string& newName, std::int64_t userID)
+{
+	if (!hasOwnership(fileID, userID))
+		throw FileError("Permission denied", FileAccessInfo(fileID, FILE_WRITE), userID);
+
+	m_db.prepare(
+		"UPDATE FileEntries SET Name = :newName WHERE ID = :fileID"
+	).bind(newName, fileID).evaluate();
+}
+
 std::string vfs::Filesystem::getExtension(const std::string& filename)
 {
 	size_t pos = filename.find_last_of('.');
