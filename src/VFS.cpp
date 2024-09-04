@@ -317,7 +317,7 @@ void vfs::Filesystem::removeFileEntry(std::int64_t fileID, std::int64_t userID)
 	m_removeFileEntry(fileID);
 }
 
-void vfs::Filesystem::renameFile(std::int64_t fileID, const std::string& newName, std::int64_t userID)
+void vfs::Filesystem::renameFileEntry(std::int64_t fileID, const std::string& newName, std::int64_t userID)
 {
 	if (!hasOwnership(fileID, userID))
 		throw FileError("Permission denied", FileAccessInfo(fileID, FILE_WRITE), userID);

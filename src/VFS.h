@@ -48,7 +48,7 @@ public:
 	void createNewDirectoryEntry(std::int64_t parentID, const std::string entryName, std::int64_t ownerID);
 	void createRootDirectoryEntry(std::int64_t ownerID);
 	void removeFileEntry(std::int64_t fileID, std::int64_t userID);
-	void renameFile(std::int64_t fileID, const std::string& newName, std::int64_t userID);
+	void renameFileEntry(std::int64_t fileID, const std::string& newName, std::int64_t userID);
 
 	File openFile(std::int64_t fileID, const char* mode);
 	File openFile(std::int64_t parentID, const std::string& filename, std::uint64_t size, std::int64_t userID);

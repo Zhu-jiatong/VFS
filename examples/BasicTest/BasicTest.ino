@@ -47,7 +47,7 @@ void setup()
 
 		printDirectory(rootID, vfs);
 
-		vfs.renameFile(3, "personal2", 0);
+		vfs.renameFileEntry(3, "personal2", 0);
 
 		printDirectory(rootID, vfs);
 
@@ -134,6 +134,9 @@ void printDirectory(std::int64_t parentID, vfs::Filesystem& vfs)
 
 	for (auto& file : files)
 	{
-		std::cout << file.fileID << ' ' << file.name << ' ' << std::boolalpha << file.isDirectory << ' ' << file.size << ' ' << file.lastModified << ' ' << file.ownerID << '\n';
+		std::cout << file.fileID << ' ' << file.name << ' ' << file.ownerID << ' ' << std::boolalpha << file.isDirectory << ' ';
+		if (!file.isDirectory)
+			std::cout << file.size << ' ' << file.lastModified;
+		std::cout << '\n';
 	}
 }
