@@ -8,6 +8,7 @@
 #include <ESPAsyncWebServer.h>
 #include <SD.h>
 #include "VFS.h"
+#include <FileError.h>
 #include <iostream>
 
 // the setup function runs once when you press reset or power the board
@@ -51,6 +52,20 @@ void setup()
 
 		printDirectory(rootID, vfs);
 
+		try
+		{
+			std::cout << vfs.getDisk(3).getMountpoint() << std::endl;
+			std::cout << vfs.getDisk(2).getMountpoint() << std::endl; // should throw an exception
+		}
+		catch (const vfs::FileError& e)
+		{
+			std::cerr << e.what() << " FILE: " << e.getFile().fileID << std::endl;
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "This should not happen: " << e.what() << std::endl; // should not be printed
+		}
+
 		std::vector<std::int64_t> path = vfs.getVirtualPath(2);
 		for (auto& i : path)
 			std::cout << i << '/';
@@ -63,8 +78,6 @@ void setup()
 
 		bool hasPermission = vfs.hasPermission(3, 0, FILE_READ);
 		std::cout << "Has permission: " << hasPermission << std::endl;
-
-		// vfs.removeFileEntry(1, 0);
 	}
 	catch (const std::exception& e)
 	{

@@ -280,6 +280,24 @@ std::int64_t vfs::Filesystem::getRootDirectoryID(std::int64_t userID)
 	return stmt.getColumnValue<std::int64_t>(0);
 }
 
+vfs::Disk& vfs::Filesystem::getDisk(std::int64_t fileID)
+{
+	SQLite::SQLStatement stmt = m_db.prepare(
+		"SELECT DiskID, typeof(DiskID) FROM FileEntries WHERE ID = :fileID"
+	);
+	stmt.bind(fileID);
+
+	if (!stmt.evaluate())
+		throw FileError("File not found", FileAccessInfo(fileID, FILE_READ));
+
+	bool isNull = stmt.getColumnValue<std::string>(1) == "null";
+	if (isNull)
+		throw FileError("File is not a physical file", FileAccessInfo(fileID, FILE_READ));
+
+	std::int64_t diskID = stmt.getColumnValue<std::int64_t>(0);
+	return m_diskMap.getDiskByID(diskID);
+}
+
 void vfs::Filesystem::createNewDirectoryEntry(std::int64_t parentID, const std::string entryName, std::int64_t ownerID)
 {
 	if (!hasPermission(parentID, ownerID, FILE_WRITE))

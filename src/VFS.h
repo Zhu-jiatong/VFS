@@ -44,6 +44,7 @@ public:
 	bool hasOwnership(std::int64_t fileID, std::int64_t userID);
 	std::vector<std::int64_t> getVirtualPath(std::int64_t fileID);
 	std::int64_t getRootDirectoryID(std::int64_t userID);
+	Disk& getDisk(std::int64_t fileID);
 
 	void createNewDirectoryEntry(std::int64_t parentID, const std::string entryName, std::int64_t ownerID);
 	void createRootDirectoryEntry(std::int64_t ownerID);
