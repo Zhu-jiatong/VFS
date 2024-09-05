@@ -66,6 +66,9 @@ void setup()
 			std::cerr << "This should not happen: " << e.what() << std::endl; // should not be printed
 		}
 
+		std::cout << vfs.isDirectory(3) << std::endl; // false
+		std::cout << vfs.isDirectory(2) << std::endl; // true
+
 		std::vector<std::int64_t> path = vfs.getVirtualPath(2);
 		for (auto& i : path)
 			std::cout << i << '/';

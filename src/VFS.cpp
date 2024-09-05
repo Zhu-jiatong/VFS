@@ -298,6 +298,19 @@ vfs::Disk& vfs::Filesystem::getDisk(std::int64_t fileID)
 	return m_diskMap.getDiskByID(diskID);
 }
 
+bool vfs::Filesystem::isDirectory(std::int64_t fileID)
+{
+	SQLite::SQLStatement stmt = m_db.prepare(
+		"SELECT typeof(DiskID) FROM FileEntries WHERE ID = :fileID" // TODO: use generated column (https://www.sqlite.org/gencol.html)
+	);
+	stmt.bind(fileID);
+
+	if (!stmt.evaluate())
+		throw FileError("File not found", FileAccessInfo(fileID, FILE_READ));
+
+	return stmt.getColumnValue<std::string>(0) == "null";
+}
+
 void vfs::Filesystem::createNewDirectoryEntry(std::int64_t parentID, const std::string entryName, std::int64_t ownerID)
 {
 	if (!hasPermission(parentID, ownerID, FILE_WRITE))
