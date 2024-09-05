@@ -311,6 +311,11 @@ bool vfs::Filesystem::isDirectory(std::int64_t fileID)
 	return stmt.getColumnValue<std::string>(0) == "null";
 }
 
+std::string vfs::Filesystem::getInternalPath(std::int64_t fileID)
+{
+	return '/' + std::to_string(fileID);
+}
+
 void vfs::Filesystem::createNewDirectoryEntry(std::int64_t parentID, const std::string entryName, std::int64_t ownerID)
 {
 	if (!hasPermission(parentID, ownerID, FILE_WRITE))
