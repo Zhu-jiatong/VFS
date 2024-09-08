@@ -377,6 +377,9 @@ void vfs::Filesystem::preupdateCallback(vfs::Filesystem& vfs, SQLite::DbConnecti
 	if (operationType != SQLite::DbConnection::ColumnUpdateType::DELETE) // Not a delete operation
 		return;
 
+	if (tableName != "FileEntries")
+		return;
+
 	SQLite::SQLValue oldDiskID = db.preupdateOld(2);
 	if (oldDiskID.type() == SQLite::SQLValue::Type::NULL_) // Not a physical file
 		return;
